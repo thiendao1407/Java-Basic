@@ -76,6 +76,8 @@ public class Reader {
 
 			switch (yourChoice) {
 			case 0:
+				Start.listBooks.clear();
+				Start.listBorrowedBooks.clear();
 				Reader.main(new String[] {});
 				break;
 
