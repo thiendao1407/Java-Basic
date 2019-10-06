@@ -428,7 +428,7 @@ public class Admin {
 				} while (yourChoice != 0 && yourChoice != 1);
 
 				if (yourChoice == 0) {
-					return;
+					break;
 				}
 
 			} // end while loop
