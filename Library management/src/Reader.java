@@ -367,7 +367,7 @@ public class Reader {
 			String sql = "DELETE FROM borrowedbooks WHERE bookId = '" + bookId + "' and userName = '" + userName + "'";
 			stmt.executeUpdate(sql);
 			System.out.println("Deleted record in the table successfully...");
-			conn.close();
+
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();
@@ -413,7 +413,7 @@ public class Reader {
 					+ " WHERE bookId = '" + bookId + "' and userName = '" + userName + "'";
 			stmt.executeUpdate(sql);
 			System.out.println("Updated record into the table successfully...");
-			conn.close();
+
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();
