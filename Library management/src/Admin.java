@@ -2,47 +2,58 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Admin {
 
-	public static void main(String[] args) {
-		Start.retrieveListBooksData();
+	private Scanner scanner = new Scanner(System.in);
 
-		while (true) {
+	public static void main(String[] args) {
+		Start start = new Start();
+		ArrayList<Book> listBooks = start.retrieveListBooksData();
+		Admin admin = new Admin();
+
+		boolean isOk = false;
+
+		while (isOk == false) {
 			System.out.println("----------------\n1. Add books");
 			System.out.println("2. Edit books");
 			System.out.println("3. Remove books");
 			System.out.println("0. Back");
 			System.out.print("Your choice: ");
-			int yourChoice = Start.scanner.nextInt();
-			Start.scanner.nextLine();
+
+			int yourChoice = admin.scanner.nextInt();
+			admin.scanner.nextLine();
 
 			switch (yourChoice) {
 			case 0:
-				Start.listBooks.clear();
-				Start.main(new String[] {});
+				isOk = true;
 				break;
 
 			case 1:
-				Admin.addBooks();
+				admin.addBooks(listBooks);
 				break;
 
 			case 2:
-				Admin.editBooks();
+				admin.editBooks(listBooks);
 				break;
 
 			case 3:
-				Admin.removeBooks();
+				admin.removeBooks(listBooks);
 				break;
-
 			}
-		}
+		} // end while
+
+		Start.main(new String[] {});
+
 	}
 
-	public static void editBooks() {
+	public void editBooks(ArrayList<Book> listBooks) {
 		Connection conn = null;
 		Statement stmt = null;
-		String sql;
+		int yourChoice;
+
 		try {
 			// Register JDBC driver
 			Class.forName("com.mysql.jdbc.Driver");
@@ -51,13 +62,24 @@ public class Admin {
 			System.out.println("\nConnecting to a selected database...");
 			conn = DriverManager.getConnection(Start.url, Start.username, Start.password);
 			System.out.println("Connected database successfully...");
-			label1: while (true) {
+
+			while (true) {
+
+				// Print the list of books
+				System.out.println("\nThe list of book: ");
+				for (Book book : listBooks) {
+					System.out.println(book);
+				}
+
 				System.out.print("ID of the book: ");
-				String bookId = Start.scanner.next();
+				String bookId = scanner.next();
+				boolean isOk = false;
 
-				for (Book bookEx : Start.listBooks) {
+				for (Book book : listBooks) {
 
-					if (bookId.equals(bookEx.getBookId())) {
+					if (bookId.equals(book.getBookId())) {
+
+						isOk = true;
 
 						System.out.println("----------------\n1. ID of the book");
 						System.out.println("2. Name of the book");
@@ -66,302 +88,372 @@ public class Admin {
 						System.out.println("5. The number of books");
 						System.out.println("0. Back");
 						System.out.print("Which field do you want to edit: ");
-						int yourChoice = Start.scanner.nextInt();
-						Start.scanner.nextLine();
+						yourChoice = scanner.nextInt();
+						scanner.nextLine();
 
 						switch (yourChoice) {
 						case 0:
-							conn.close();
-							Admin.main(new String[] {});
 							break;
 
 						case 1:
 							System.out.print("\nThe new ID: ");
-							bookId = Start.scanner.nextLine();
-							boolean isOk = true;
-							for (Book bookEx1 : Start.listBooks) {
-								if (bookId.equals(bookEx.getBookId()) || bookId.equals(bookEx1.getBookId())) {
+							bookId = scanner.nextLine();
+
+							boolean isOk2 = true;
+							for (Book book2 : listBooks) {
+								if (bookId.equals(book.getBookId()) || bookId.equals(book2.getBookId())) {
 									System.out.println(
 											"\nThe ID has already existed or the updated is the same as the old, please try again");
-									isOk = false;
+									isOk2 = false;
 									break;
 								}
 							}
 
-							if (isOk == true) {
+							if (isOk2 == true) {
+
 								if (bookId.isBlank()) {
 									System.out.println("\nThe bookId field can not be blank, please try again\n");
+
 								} else {
 									// Execute a query
-									System.out.println("\nUpdating record into the table...");
+//									System.out.println("\nUpdating record into the table...");
 									stmt = conn.createStatement();
 
-									sql = "UPDATE  books " + "SET bookId = '" + bookId.toString() + "' WHERE id = '"
-											+ bookEx.getBookId() + "'";
+									String sql = "UPDATE  books " + "SET bookId = '" + bookId + "' WHERE bookId = '"
+											+ book.getBookId() + "'";
 									stmt.executeUpdate(sql);
 									System.out.println("Updated records into the table...");
-									bookEx.setBookId(bookId);
+									book.setBookId(bookId);
 								}
+
 							}
+
 							break;
 
 						case 2:
 							System.out.print("\nThe updated bookName: ");
-							String bookName = Start.scanner.nextLine();
-							isOk = true;
-							if (bookName.equals(bookEx.getBookName())) {
+							String bookName = scanner.nextLine();
+
+							if (bookName.equals(book.getBookName())) {
 								System.out.println("\nThe updated is the same as the old");
-								isOk = false;
+								break;
 							}
 
-							if (isOk == true) {
-								if (bookName.isBlank()) {
-									System.out.println("\nThe bookName field can not be blank, please try again");
-								} else {
-									// Execute a query
-									System.out.println("\nUpdating record into the table...");
-									stmt = conn.createStatement();
+							if (bookName.isBlank()) {
+								System.out.println("\nThe bookName field can not be blank, please try again");
 
-									sql = "UPDATE  books " + "SET bookName = '" + bookName.toString()
-											+ "' WHERE bookId = '" + bookEx.getBookId() + "'";
-									stmt.executeUpdate(sql);
-									System.out.println("Updated records into the table...");
-									bookEx.setBookName(bookName);
-								}
+							} else {
+								// Execute a query
+								System.out.println("\nUpdating record into the table...");
+								stmt = conn.createStatement();
+
+								String sql = "UPDATE  books " + "SET bookName = '" + bookName.toString()
+										+ "' WHERE bookId = '" + book.getBookId() + "'";
+								stmt.executeUpdate(sql);
+								System.out.println("Updated records into the table...");
+								book.setBookName(bookName);
 							}
+
 							break;
 
 						case 3:
 							System.out.print("\nThe updated author: ");
-							String author = Start.scanner.nextLine();
-							isOk = true;
-							if (author.equals(bookEx.getBookName())) {
+							String author = scanner.nextLine();
+
+							if (author.equals(book.getBookName())) {
 								System.out.println("\nThe updated is the same as the old");
-								isOk = false;
+								break;
 							}
 
-							if (isOk == true) {
-								if (author.isBlank()) {
-									System.out.println("\nThe author field can not be blank, please try again\n");
-								} else {
-									// Execute a query
-									System.out.println("\nUpdating record into the table...");
-									stmt = conn.createStatement();
+							if (author.isBlank()) {
+								System.out.println("\nThe author field can not be blank, please try again\n");
 
-									sql = "UPDATE  books " + "SET author = '" + author.toString() + "' WHERE bookId = '"
-											+ bookEx.getBookId() + "'";
-									stmt.executeUpdate(sql);
-									System.out.println("Updated records into the table...");
-									bookEx.setBookName(author);
-								}
+							} else {
+								// Execute a query
+								System.out.println("\nUpdating record into the table...");
+								stmt = conn.createStatement();
+
+								String sql = "UPDATE  books " + "SET author = '" + author.toString()
+										+ "' WHERE bookId = '" + book.getBookId() + "'";
+								stmt.executeUpdate(sql);
+								System.out.println("Updated records into the table...");
+								book.setBookName(author);
 							}
+
 							break;
 
 						case 4:
 							System.out.print("\nThe updated publishYear: ");
-							Integer publishYear = Start.scanner.nextInt();
-							Start.scanner.nextLine();
-							isOk = true;
-							if (publishYear.equals(bookEx.getPublishYear())) {
+							Integer publishYear = scanner.nextInt();
+							scanner.nextLine();
+
+							if (publishYear.equals(book.getPublishYear())) {
 								System.out.println("\nThe updated is the same as the old");
-								isOk = false;
+								break;
 							}
 
-							if (isOk == true) {
-								// Execute a query
-								System.out.println("\nUpdating record into the table...");
-								stmt = conn.createStatement();
+							// Execute a query
+							System.out.println("\nUpdating record into the table...");
+							stmt = conn.createStatement();
 
-								sql = "UPDATE  books " + "SET publishYear = " + publishYear.toString()
-										+ " WHERE bookId = " + bookEx.getBookId() + "";
-								stmt.executeUpdate(sql);
-								System.out.println("Updated records into the table...");
-								bookEx.setPublishYear(publishYear);
-							}
+							String sql = "UPDATE  books " + "SET publishYear = " + publishYear.toString()
+									+ " WHERE bookId = '" + book.getBookId() + "'";
+							stmt.executeUpdate(sql);
+							System.out.println("Updated records into the table...");
+							book.setPublishYear(publishYear);
+
 							break;
 
 						case 5:
 							System.out.print("\nThe updated number of books: ");
-							Integer numberOfBooks = Start.scanner.nextInt();
-							Start.scanner.nextLine();
-							isOk = true;
-							if (numberOfBooks.equals(bookEx.getNumberOfBooks())) {
+							Integer numberOfBooks = scanner.nextInt();
+							scanner.nextLine();
+
+							if (numberOfBooks.equals(book.getNumberOfBooks())) {
 								System.out.println("\nThe updated is the same as the old");
-								isOk = false;
+								break;
 							}
 
-							if (isOk == true) {
-								// Execute a query
-								System.out.println("\nUpdating record into the table...");
-								stmt = conn.createStatement();
+							// Execute a query
+							System.out.println("\nUpdating record into the table...");
+							stmt = conn.createStatement();
 
-								sql = "UPDATE  books " + "SET numberOfBooks = " + numberOfBooks.toString()
-										+ " WHERE bookId = " + bookEx.getBookId() + "";
-								stmt.executeUpdate(sql);
-								System.out.println("Updated records into the table...");
-								bookEx.setNumberOfBooks(numberOfBooks);
-							}
+							sql = "UPDATE  books " + "SET numberOfBooks = " + numberOfBooks.toString()
+									+ " WHERE bookId = '" + book.getBookId() + "'";
+							stmt.executeUpdate(sql);
+							System.out.println("Updated records into the table...");
+							book.setNumberOfBooks(numberOfBooks);
+
 							break;
-
 						}// end switch
-						do {
-							System.out.println("\nDo you want to edit another book?");
-							System.out.println("1. Yes");
-							System.out.print("0. No -> Your choice: ");
-							yourChoice = Start.scanner.nextInt();
-							Start.scanner.nextLine();
-						} while (yourChoice != 0 && yourChoice != 1);
-						if (yourChoice == 0) {
-							break label1;
-						} else
-							continue label1;
+
+						break;
 					} // end if
+
 				} // end for loop
 
-				System.out.println("\nThe ID does not exist");
-				System.out.println();
-				break label1;
+				if (isOk == false) {
+					System.out.println("The ID does not exist\n");
+				}
+
+				do {
+					System.out.println("\nDo you want to edit another book?");
+					System.out.println("1. Yes");
+					System.out.print("0. No -> Your choice: ");
+					yourChoice = scanner.nextInt();
+					scanner.nextLine();
+				} while (yourChoice != 0 && yourChoice != 1);
+
+				if (yourChoice == 0) {
+					break;
+				}
 
 			} // end while loop
-			conn.close();
+
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();
 		} catch (Exception e) {
 			// Handle errors for Class.forName
 			e.printStackTrace();
-		}
+		} finally {
+			// finally block used to close resources
+
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			} // do nothing
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+		} // end try
 
 	}
 
-	public static void removeBooks() {
+	public void removeBooks(ArrayList<Book> listBooks) {
 		Connection conn = null;
 		Statement stmt = null;
-		String sql;
+		int yourChoice;
+
 		try {
 			// Register JDBC driver
 			Class.forName("com.mysql.jdbc.Driver");
 
 			// Open a connection
-			System.out.println("\nConnecting to a selected database...");
+//			System.out.println("\nConnecting to a selected database...");
 			conn = DriverManager.getConnection(Start.url, Start.username, Start.password);
-			System.out.println("Connected database successfully...");
+//			System.out.println("Connected database successfully...");
 
-			label1: while (true) {
-				System.out.print("\nID of the book: ");
-				String bookId = Start.scanner.nextLine();
+			while (true) {
 
-				for (Book book : Start.listBooks) {
+				// Print the list of books
+				System.out.println("\nThe list of book: ");
+				for (Book book : listBooks) {
+					System.out.println(book);
+				}
+
+				System.out.print("\nID of the book you want to remove: ");
+				String bookId = scanner.nextLine();
+
+				boolean isOk = false;
+
+				for (Book book : listBooks) {
 					if (bookId.equals(book.getBookId())) {
-						Start.listBooks.remove(book);
+
+						isOk = true;
+						listBooks.remove(book);
+
 						// Execute a query
-						System.out.println("Deleting record in the table...");
+//						System.out.println("Deleting record in the table...");
 						stmt = conn.createStatement();
 
-						sql = "DELETE FROM books " + "WHERE bookId = " + book.getBookId() + "";
+						String sql = "DELETE FROM books " + "WHERE bookId = " + book.getBookId() + "";
 						stmt.executeUpdate(sql);
 						System.out.println("Deleted record in the table successfully...");
 						break;
 					}
-					int yourChoice;
-					do {
-						System.out.println("\nDo you want to remove another book?");
-						System.out.println("1. Yes");
-						System.out.print("0. No -> Your choice: ");
-						yourChoice = Start.scanner.nextInt();
-						Start.scanner.nextLine();
-					} while (yourChoice != 0 && yourChoice != 1);
-					if (yourChoice == 0) {
-						break label1;
-					} else
-						continue label1;
 				}
 
-				System.out.println("The ID does not exist");
-				System.out.println();
-				break label1;
+				if (isOk == false) {
+					System.out.println("The ID does not exist\n");
+				}
 
-			}
-			conn.close();
+				do {
+					System.out.println("\nDo you want to remove another book?");
+					System.out.println("1. Yes");
+					System.out.print("0. No -> Your choice: ");
+					yourChoice = scanner.nextInt();
+					scanner.nextLine();
+				} while (yourChoice != 0 && yourChoice != 1);
+
+				if (yourChoice == 0) {
+					break;
+				}
+
+			} // end while
+
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();
 		} catch (Exception e) {
 			// Handle errors for Class.forName
 			e.printStackTrace();
-		}
+		} finally {
+			// finally block used to close resources
+
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			} // do nothing
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+		} // end try
 
 	}
 
-	public static void addBooks() {
+	public void addBooks(ArrayList<Book> listBooks) {
 		Connection conn = null;
 		Statement stmt = null;
-		String sql;
+		int yourChoice;
+
 		try {
 			// Register JDBC driver
 			Class.forName("com.mysql.jdbc.Driver");
 
 			// Open a connection
-			System.out.println("\nConnecting to a selected database...");
+//			System.out.println("\nConnecting to a selected database...");
 			conn = DriverManager.getConnection(Start.url, Start.username, Start.password);
-			System.out.println("Connected database successfully...");
+//			System.out.println("Connected database successfully...");
 
-			label1: while (true) {
-				System.out.print("\nID of book: ");
-				String bookId = Start.scanner.nextLine();
+			while (true) {
 
-				for (Book bookEx : Start.listBooks) {
-					if (bookId.equals(bookEx.getBookId())) {
+				// Print the list of books
+				System.out.println("\nThe list of book: ");
+				for (Book book : listBooks) {
+					System.out.println(book);
+				}
+
+				System.out.print("\nID of book you want to add: ");
+				String bookId = scanner.nextLine();
+				boolean isOk = false;
+
+				for (Book book : listBooks) {
+					if (bookId.equals(book.getBookId())) {
 						System.out.println("\nThe ID has already existed, please try again");
-						break label1;
+						isOk = true;
+						break;
 					}
 				}
 
 				// add a book
-				Book book = new Book();
-				book.eterBook(bookId);
+				if (isOk != true) {
 
-				if (book.getBookId().isBlank() || book.getAuthor().isBlank() || book.getBookName().isBlank()) {
-					System.out.println("\nThe fields can not be blank, please try again");
-					continue label1;
-				} else {
-					Start.listBooks.add(book);
-					// Execute a query
-					System.out.println("\nInserting record into the table...");
-					stmt = conn.createStatement();
+					Book book = new Book();
+					book.eterBook(bookId);
 
-					sql = "INSERT INTO books " + "VALUES ('" + book.getBookId() + "', '" + book.getBookName() + "',"
-							+ " '" + book.getAuthor() + "', " + book.getPublishYear() + ", " + book.getNumberOfBooks()
-							+ ")";
-					stmt.executeUpdate(sql);
-					System.out.println("Inserted record into the table...");
+					if (book.getBookId().isBlank() || book.getAuthor().isBlank() || book.getBookName().isBlank()) {
+						System.out.println("\nThe fields can not be blank, please try again");
+
+					} else {
+
+						listBooks.add(book);
+
+						// Execute a query
+						System.out.println("\nInserting record into the table...");
+						stmt = conn.createStatement();
+
+						String sql = "INSERT INTO books " + "VALUES ('" + book.getBookId() + "', '" + book.getBookName()
+								+ "'," + " '" + book.getAuthor() + "', " + book.getPublishYear() + ", "
+								+ book.getNumberOfBooks() + ")";
+						stmt.executeUpdate(sql);
+						System.out.println("Inserted record into the table...");
+					}
 				}
 
-				int yourChoice;
 				do {
-					System.out.println("\nDo you want to borrow another book?");
+					System.out.println("\nDo you want to add another book?");
 					System.out.println("1. Yes");
 					System.out.print("0. No -> Your choice: ");
-					yourChoice = Start.scanner.nextInt();
-					Start.scanner.nextLine();
+					yourChoice = scanner.nextInt();
+					scanner.nextLine();
 				} while (yourChoice != 0 && yourChoice != 1);
 
-				if (yourChoice == 1) {
-					continue label1;
-				} else {
-					break label1;
+				if (yourChoice == 0) {
+					return;
 				}
 
-			} // end while loop : label1
+			} // end while loop
 
-			conn.close();
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();
 		} catch (Exception e) {
 			// Handle errors for Class.forName
 			e.printStackTrace();
-		}
+		} finally {
+			// finally block used to close resources
+
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			} // do nothing
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+		} // end try
 
 	}
 }

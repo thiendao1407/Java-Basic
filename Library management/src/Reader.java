@@ -2,58 +2,65 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Reader {
 
-	public static void main(String[] args) {
-		Start.retrieveListBooksData();
-		Start.retrieveListBorrowedBooksData();
+	private Scanner scanner = new Scanner(System.in);
 
-		while (true) {
+	public static void main(String[] args) {
+		Start start = new Start();
+		ArrayList<Book> listBooks = start.retrieveListBooksData();
+		ArrayList<BorrowedBooks> listBorrowedBooks = start.retrieveListBorrowedBooksData();
+		Reader reader = new Reader();
+
+		boolean isOk = false;
+
+		while (isOk == false) {
 			System.out.println("----------------\n1. Search books");
 			System.out.println("2. Borrow books");
 			System.out.println("3. Return books");
 			System.out.println("0. Back");
 			System.out.print("Your choice: ");
-			int yourChoice = Start.scanner.nextInt();
-			Start.scanner.nextLine();
+			int yourChoice = reader.scanner.nextInt();
+			reader.scanner.nextLine();
 
 			switch (yourChoice) {
 			case 0:
-				Start.listBooks.clear();
-				Start.listBorrowedBooks.clear();
-				Start.main(new String[] {});
+				isOk = true;
 				break;
 
 			case 1:
-				Reader.searchBooks();
+				reader.searchBooks(listBooks, listBorrowedBooks);
 				break;
 
 			case 2:
-				Reader.borrowBooks();
+				reader.borrowBooks(listBooks, listBorrowedBooks);
 				break;
 
 			case 3:
-				Reader.returnBooks();
+				reader.returnBooks(listBooks, listBorrowedBooks);
 				break;
-
 			}
 		}
 
+		Start.main(new String[] {});
+
 	}
 
-	public static int availableBooks(String bookId) {
+	public int availableBooks(String bookId, ArrayList<Book> listBooks, ArrayList<BorrowedBooks> listBorrowedBooks) {
 		int total = 0;
 		int borrowed = 0;
-		for (Book book : Start.listBooks) {
+		for (Book book : listBooks) {
 			if (bookId.equals(book.getBookId())) {
 				total += book.getNumberOfBooks();
 			}
 		}
 
-		for (BorrowedBooks borrowedBooks : Start.listBorrowedBooks) {
+		for (BorrowedBooks borrowedBooks : listBorrowedBooks) {
 			if (bookId.equals(borrowedBooks.getBookId())) {
 				borrowed += borrowedBooks.getNumberOfBorrowedBooks();
 			}
@@ -63,29 +70,27 @@ public class Reader {
 
 	}
 
-	public static void searchBooks() {
-		while (true) {
+	public void searchBooks(ArrayList<Book> listBooks, ArrayList<BorrowedBooks> listBorrowedBooks) {
+		int yourChoice = -1;
+		while (yourChoice != 0) {
 			System.out.println("Please choose an option: ");
 			System.out.println("1. Search by id");
 			System.out.println("2. Search by name");
 			System.out.println("3. Search by author");
 			System.out.println("0. Back");
 			System.out.print("Your choice: ");
-			int yourChoice = Start.scanner.nextInt();
-			Start.scanner.nextLine();
+			yourChoice = scanner.nextInt();
+			scanner.nextLine();
 
 			switch (yourChoice) {
 			case 0:
-				Start.listBooks.clear();
-				Start.listBorrowedBooks.clear();
-				Reader.main(new String[] {});
 				break;
 
 			case 1:
 				System.out.print("ID of book (No full ID required): ");
-				String REGEX = ".*" + Start.scanner.nextLine() + ".*";
+				String REGEX = ".*" + scanner.nextLine() + ".*";
 				Pattern pattern = Pattern.compile(REGEX);
-				for (Book book : Start.listBooks) {
+				for (Book book : listBooks) {
 					Matcher matcher = pattern.matcher(book.getBookId());
 					if (matcher.matches())
 						System.out.println(book);
@@ -94,9 +99,9 @@ public class Reader {
 
 			case 2:
 				System.out.print("Name of book (No full name required): ");
-				REGEX = ".*" + Start.scanner.nextLine() + ".*";
+				REGEX = ".*" + scanner.nextLine() + ".*";
 				pattern = Pattern.compile(REGEX);
-				for (Book book : Start.listBooks) {
+				for (Book book : listBooks) {
 					Matcher matcher = pattern.matcher(book.getBookName());
 					if (matcher.matches())
 						System.out.println(book);
@@ -105,9 +110,9 @@ public class Reader {
 
 			case 3:
 				System.out.print("Author of book (No full name required): ");
-				REGEX = ".*" + Start.scanner.nextLine() + ".*";
+				REGEX = ".*" + scanner.nextLine() + ".*";
 				pattern = Pattern.compile(REGEX);
-				for (Book book : Start.listBooks) {
+				for (Book book : listBooks) {
 					Matcher matcher = pattern.matcher(book.getAuthor());
 					if (matcher.matches())
 						System.out.println(book);
@@ -115,94 +120,118 @@ public class Reader {
 				break;
 			}
 		}
+
+		return;
 	}
 
-	public static void borrowBooks() {
-		label1: while (true) {
+	public void borrowBooks(ArrayList<Book> listBooks, ArrayList<BorrowedBooks> listBorrowedBooks) {
+		Reader reader = new Reader();
+		Start start = new Start();
+		int yourChoice;
+
+		while (true) {
+
 			// Print the list of books
 			System.out.println("\nThe list of book: ");
-			for (Book book : Start.listBooks) {
+			for (Book book : listBooks) {
 				System.out.println("[" + book.getBookId() + ", " + book.getBookName() + ", " + book.getAuthor() + ", "
-						+ book.getPublishYear() + ", remaining: " + Reader.availableBooks(book.getBookId()) + "]");
+						+ book.getPublishYear() + ", remaining: "
+						+ reader.availableBooks(book.getBookId(), listBooks, listBorrowedBooks) + "]");
 			}
 
 			System.out.print("\nID of book you want to borrow: ");
-			String bookId = Start.scanner.nextLine();
+			String bookId = scanner.nextLine();
+			boolean isOk = false;
 
-			for (Book book : Start.listBooks) {
+			for (Book book : listBooks) {
 				if (bookId.equals(book.getBookId())) {
 
-					if (Reader.availableBooks(bookId) == 0) {
+					if (reader.availableBooks(bookId, listBooks, listBorrowedBooks) == 0) {
 						System.out.println("\nAll books have been borrowed...");
 						return;
 					}
 
 					System.out.print("\nHow many books do you want to borrow?" + " " + "Or enter \"0\" to go back...");
-					int yourChoice = Start.scanner.nextInt();
-					Start.scanner.nextLine();
+					yourChoice = scanner.nextInt();
+					scanner.nextLine();
 
 					if (yourChoice == 0) {
-						System.out.println();
 						return;
-					} else if (yourChoice > Reader.availableBooks(bookId) || yourChoice < 0) {
+
+					} else if (yourChoice > reader.availableBooks(bookId, listBooks, listBorrowedBooks)
+							|| yourChoice < 0) {
 						System.out.println("\nThe number is not valid!...");
+						isOk = true;
+						break;
+
 					} else {
-						boolean isOk = false;
-						for (BorrowedBooks borrowedBooks : Start.listBorrowedBooks) {
-							if (Start.userName.equals(borrowedBooks.getUserName())
+						for (BorrowedBooks borrowedBooks : listBorrowedBooks) {
+							if (start.getCurrentUserName().equals(borrowedBooks.getUserName())
 									&& bookId.equals(borrowedBooks.getBookId())) {
 								borrowedBooks.setNumberOfBorrowedBooks(yourChoice);
-								Reader.updateBorrowedRecord(borrowedBooks.getNumberOfBorrowedBooks(),
+								reader.updateBorrowedRecord(borrowedBooks.getNumberOfBorrowedBooks(),
 										borrowedBooks.getBookId(), borrowedBooks.getUserName());
 								isOk = true;
 								System.out.println();
 								break;
 							}
 						}
-						if (!isOk) {
-							BorrowedBooks borrowedBooks = new BorrowedBooks(bookId, book.getBookName(), Start.userName,
-									yourChoice);
-							Start.listBorrowedBooks.add(borrowedBooks);
-							Reader.insertBorrowedRecord(borrowedBooks.getBookId(), borrowedBooks.getBookName(),
+
+						if (isOk == false) {
+							BorrowedBooks borrowedBooks = new BorrowedBooks(bookId, book.getBookName(),
+									start.getCurrentUserName(), yourChoice);
+							listBorrowedBooks.add(borrowedBooks);
+							reader.insertBorrowedRecord(borrowedBooks.getBookId(), borrowedBooks.getBookName(),
 									borrowedBooks.getUserName(), borrowedBooks.getNumberOfBorrowedBooks());
 							System.out.println();
+							isOk = true;
 						}
 
+						break;
 					}
-					do {
-						System.out.println("\nDo you want to borrow another book?");
-						System.out.println("1. Yes");
-						System.out.print("0. No -> Your choice: ");
-						yourChoice = Start.scanner.nextInt();
-						Start.scanner.nextLine();
-					} while (yourChoice != 0 && yourChoice != 1);
-					if (yourChoice == 0) {
-						return;
-					} else
-						continue label1;
+
 				} // end if
+
 			} // end for loop
 
-			System.out.println("\nThe ID does not exist...");
-			System.out.println();
-			return;
+			if (isOk == false) {
+				System.out.println("\nThe ID does not exist...\n");
+			}
 
-		}
+			do {
+				System.out.println("\nDo you want to borrow another book?");
+				System.out.println("1. Yes");
+				System.out.print("0. No -> Your choice: ");
+				yourChoice = scanner.nextInt();
+				scanner.nextLine();
+			} while (yourChoice != 0 && yourChoice != 1);
+
+			if (yourChoice == 0) {
+				return;
+			}
+
+		} // end while loop
 	}// end method
 
-	public static void returnBooks() {
-		label1: while (true) {
+	public void returnBooks(ArrayList<Book> listBooks, ArrayList<BorrowedBooks> listBorrowedBooks) {
+
+		Reader reader = new Reader();
+		Start start = new Start();
+		int yourChoice;
+
+		while (true) {
+
 			// Check whether you borrowed any book and print the list
-			boolean isOk = false;
-			System.out.println("\nThe list of books you borrowed...");
-			for (BorrowedBooks borrowedBooks : Start.listBorrowedBooks) {
-				if (Start.userName.equals(borrowedBooks.getUserName())) {
+			int icount = 0;
+			System.out.println("\nThe list of books you have borrowed...");
+			for (BorrowedBooks borrowedBooks : listBorrowedBooks) {
+				if (start.getCurrentUserName().equals(borrowedBooks.getUserName())) {
 					System.out.println(borrowedBooks);
-					isOk = true;
+					icount++;
 				}
 			}
 
-			if (!isOk) {
+			if (icount == 0) {
 				System.out.println("\nYou have not borrowed any book...");
 				System.out.println();
 				return;
@@ -210,54 +239,73 @@ public class Reader {
 
 			// Return a book
 			System.out.print("\nID of book you want to return: ");
-			String bookId = Start.scanner.nextLine();
+			String bookId = scanner.nextLine();
+			boolean isOk = false;
 
-			for (BorrowedBooks borrowedBooks : Start.listBorrowedBooks) {
-				if (bookId.equals(borrowedBooks.getBookId()) && Start.userName.equals(borrowedBooks.getUserName())) {
+			for (BorrowedBooks borrowedBooks : listBorrowedBooks) {
+				if (bookId.equals(borrowedBooks.getBookId())
+						&& start.getCurrentUserName().equals(borrowedBooks.getUserName())) {
 
+					isOk = true;
 					System.out.print("How many books you want to return?" + " " + "Or enter \"0\" to go back...");
-					int yourChoice = Start.scanner.nextInt();
+					yourChoice = scanner.nextInt();
 
 					if (yourChoice == 0) {
 						System.out.println();
 						return;
+
 					} else if (yourChoice > borrowedBooks.getNumberOfBorrowedBooks() || yourChoice < 0) {
 						System.out.println("\nThe number is not valid!...");
+						break;
+
 					} else if (yourChoice == borrowedBooks.getNumberOfBorrowedBooks()) {
-						Start.listBorrowedBooks.remove(borrowedBooks);
-						Reader.deleteBorrowedRecord(borrowedBooks.getBookId(), borrowedBooks.getUserName());
+						listBorrowedBooks.remove(borrowedBooks);
+						reader.deleteBorrowedRecord(borrowedBooks.getBookId(), borrowedBooks.getUserName());
+						break;
+
 					} else if (yourChoice < borrowedBooks.getNumberOfBorrowedBooks()) {
 						borrowedBooks.setNumberOfBorrowedBooks(-yourChoice);
-						Reader.updateBorrowedRecord(borrowedBooks.getNumberOfBorrowedBooks(), borrowedBooks.getBookId(),
+						reader.updateBorrowedRecord(borrowedBooks.getNumberOfBorrowedBooks(), borrowedBooks.getBookId(),
 								borrowedBooks.getUserName());
+						break;
 					}
 					do {
 						System.out.println("\nDo you want to return another book?");
 						System.out.println("1. Yes");
 						System.out.print("0. No -> Your choice: ");
-						yourChoice = Start.scanner.nextInt();
-						Start.scanner.nextLine();
+						yourChoice = scanner.nextInt();
+						scanner.nextLine();
 					} while (yourChoice != 0 && yourChoice != 1);
 					if (yourChoice == 0) {
 						return;
-					} else
-						continue label1;
+					}
 				} // end if
 			} // end for loop
 
-			System.out.println("\nThe ID does not exist in the list of books you have borrowed...");
-			System.out.println();
-			return; // end method
-		}
+			if (isOk == false) {
+				System.out.println("\nThe ID does not exist in the list of books you have borrowed...");
+			}
+
+			do {
+				System.out.println("\nDo you want to return another book?");
+				System.out.println("1. Yes");
+				System.out.print("0. No -> Your choice: ");
+				yourChoice = scanner.nextInt();
+				scanner.nextLine();
+			} while (yourChoice != 0 && yourChoice != 1);
+
+			if (yourChoice == 0) {
+				return;
+			}
+		} // end while
 
 	}
 
-	public static void insertBorrowedRecord(String bookId, String bookName, String userName,
-			int numberOfBorrowedBooks) {
+	public void insertBorrowedRecord(String bookId, String bookName, String userName, int numberOfBorrowedBooks) {
 		// JDBC driver name and database URL
 		Connection conn = null;
 		Statement stmt = null;
-		String sql;
+
 		try {
 			// Register JDBC driver
 			Class.forName("com.mysql.jdbc.Driver");
@@ -265,31 +313,45 @@ public class Reader {
 			// Open a connection
 			System.out.println("Connecting to a selected database...");
 			conn = DriverManager.getConnection(Start.url, Start.username, Start.password);
-			System.out.println("Connected database successfully...");
+//			System.out.println("Connected database successfully...");
 			// Execute a query
-			System.out.println("Inserting record into the table...");
+//			System.out.println("Inserting record into the table...");
 			stmt = conn.createStatement();
 
-			sql = "INSERT INTO borrowedbooks VALUES ('" + bookId + "', '" + bookName + "', '" + userName + "', '"
+			String sql = "INSERT INTO borrowedbooks VALUES ('" + bookId + "', '" + bookName + "', '" + userName + "', '"
 					+ numberOfBorrowedBooks + "')";
 			stmt.executeUpdate(sql);
 			System.out.println("Inserted record into the table successfully...");
-			conn.close();
+
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();
 		} catch (Exception e) {
 			// Handle errors for Class.forName
 			e.printStackTrace();
-		}
+		} finally {
+			// finally block used to close resources
+
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			} // do nothing
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+		} // end try
 
 	}
 
-	public static void deleteBorrowedRecord(String bookId, String userName) {
+	public void deleteBorrowedRecord(String bookId, String userName) {
 		// JDBC driver name and database URL
 		Connection conn = null;
 		Statement stmt = null;
-		String sql;
+
 		try {
 			// Register JDBC driver
 			Class.forName("com.mysql.jdbc.Driver");
@@ -297,12 +359,12 @@ public class Reader {
 			// Open a connection
 			System.out.println("Connecting to a selected database...");
 			conn = DriverManager.getConnection(Start.url, Start.username, Start.password);
-			System.out.println("Connected database successfully...");
+//			System.out.println("Connected database successfully...");
 			// Execute a query
-			System.out.println("Deleting record in the table...");
+//			System.out.println("Deleting record in the table...");
 			stmt = conn.createStatement();
 
-			sql = "DELETE FROM borrowedbooks WHERE bookId = '" + bookId + "' and userName = '" + userName + "'";
+			String sql = "DELETE FROM borrowedbooks WHERE bookId = '" + bookId + "' and userName = '" + userName + "'";
 			stmt.executeUpdate(sql);
 			System.out.println("Deleted record in the table successfully...");
 			conn.close();
@@ -312,15 +374,29 @@ public class Reader {
 		} catch (Exception e) {
 			// Handle errors for Class.forName
 			e.printStackTrace();
-		}
+		} finally {
+			// finally block used to close resources
+
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			} // do nothing
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+		} // end try
 
 	}
 
-	public static void updateBorrowedRecord(int numberOfBorrowedBooks, String bookId, String userName) {
+	public void updateBorrowedRecord(int numberOfBorrowedBooks, String bookId, String userName) {
 		// JDBC driver name and database URL
 		Connection conn = null;
 		Statement stmt = null;
-		String sql;
+
 		try {
 			// Register JDBC driver
 			Class.forName("com.mysql.jdbc.Driver");
@@ -328,12 +404,12 @@ public class Reader {
 			// Open a connection
 			System.out.println("Connecting to a selected database...");
 			conn = DriverManager.getConnection(Start.url, Start.username, Start.password);
-			System.out.println("Connected database successfully...");
+//			System.out.println("Connected database successfully...");
 			// Execute a query
-			System.out.println("Updating record into the table...");
+//			System.out.println("Updating record into the table...");
 			stmt = conn.createStatement();
 
-			sql = "UPDATE borrowedbooks " + " SET numberOfBorrowedBooks = " + numberOfBorrowedBooks
+			String sql = "UPDATE borrowedbooks " + " SET numberOfBorrowedBooks = " + numberOfBorrowedBooks
 					+ " WHERE bookId = '" + bookId + "' and userName = '" + userName + "'";
 			stmt.executeUpdate(sql);
 			System.out.println("Updated record into the table successfully...");
@@ -344,7 +420,21 @@ public class Reader {
 		} catch (Exception e) {
 			// Handle errors for Class.forName
 			e.printStackTrace();
-		}
+		} finally {
+			// finally block used to close resources
+
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			} // do nothing
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+		} // end try
 
 	}
 
