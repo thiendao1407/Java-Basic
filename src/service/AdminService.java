@@ -4,7 +4,6 @@ import static service.LoginScreen.bufferedReader;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 
 import entity.Book;
 import exception.BookAlreadyExistsException;
@@ -57,10 +56,12 @@ public class AdminService {
 	public void insertBook() {
 
 		BookRepository bookRepository = new BookRepository();
+		Book book = new Book();
 
 		try {
 			// Print all of the books
-			showAllBooks(getAllBooks());
+
+			book.showAllBooks(book.getAllBooks());
 
 			System.out.println("ID of book you want to insert: ");
 			String book_id = bufferedReader.readLine();
@@ -69,7 +70,7 @@ public class AdminService {
 				throw new BookAlreadyExistsException(book_id);
 			}
 
-			Book book = new Book().fillInTheInformation(book_id);
+			book = book.fillInTheInformation(book_id);
 			book.checkTheValidityOfBook();
 
 			// Insert record
@@ -84,10 +85,11 @@ public class AdminService {
 
 	public void updateBook() {
 		BookRepository bookRepository = new BookRepository();
+		Book book = new Book();
 
 		try {
 			// Print all of the books
-			showAllBooks(getAllBooks());
+			book.showAllBooks(book.getAllBooks());
 
 			System.out.println("ID of book you want to update: ");
 			String book_id = bufferedReader.readLine();
@@ -96,7 +98,7 @@ public class AdminService {
 				throw new BookNotFoundException(book_id);
 			}
 
-			Book book = new Book().fillInTheInformation();
+			book = book.fillInTheInformation();
 			book.checkTheValidityOfBook();
 
 			// Update record
@@ -112,10 +114,11 @@ public class AdminService {
 	public void deleteBook() {
 
 		BookRepository bookRepository = new BookRepository();
+		Book book = new Book();
 
 		try {
 			// Print all of the books
-			showAllBooks(getAllBooks());
+			book.showAllBooks(book.getAllBooks());
 
 			System.out.println("ID of book you want to delete: ");
 			String book_id = bufferedReader.readLine();
@@ -133,26 +136,4 @@ public class AdminService {
 		}
 	}
 
-	public void showAllBooks(LinkedHashSet<Book> setOfBooks) {
-		System.out.println("------");
-
-		for (Book book : setOfBooks) {
-			System.out.println(book);
-		}
-
-		System.out.println("------");
-
-	}
-
-	public LinkedHashSet<Book> getAllBooks() {
-		BookRepository bookRepository = new BookRepository();
-
-		try {
-			return bookRepository.getAllBooksToSet();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-	}
 }

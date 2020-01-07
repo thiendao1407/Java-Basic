@@ -3,8 +3,11 @@ package entity;
 import static service.LoginScreen.bufferedReader;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.LinkedHashSet;
 
 import exception.InvalidFormatException;
+import repository.BookRepository;
 
 public class Book {
 	private int number_of_books;
@@ -109,6 +112,29 @@ public class Book {
 		number_of_books = Integer.parseInt(bufferedReader.readLine());
 
 		return this;
+
+	}
+
+	public void showAllBooks(LinkedHashSet<Book> linkedHashSet) {
+		System.out.println("------");
+
+		for (Book book : linkedHashSet) {
+			System.out.println(book);
+		}
+
+		System.out.println("------");
+
+	}
+
+	public LinkedHashSet<Book> getAllBooks() {
+		BookRepository bookRepository = new BookRepository();
+
+		try {
+			return bookRepository.getAllBooksToSet();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
 
 	}
 

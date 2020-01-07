@@ -10,6 +10,7 @@ import exception.FailedLoginException;
 import repository.UserRepository;
 
 public class LoginScreen {
+
 	public static final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 
 	public static void main(String[] args) {

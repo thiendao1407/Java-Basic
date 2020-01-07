@@ -4,9 +4,7 @@ import static service.LoginScreen.bufferedReader;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 import entity.Book;
 import entity.BorrowedBooks;
@@ -98,6 +96,7 @@ public class ReaderService {
 	public LinkedHashSet<Book> searchBook(String bookField) {
 
 		System.out.println("Please enter keyword (No full name required): ");
+
 		try {
 			String regex = "%" + bufferedReader.readLine() + "%";
 
@@ -105,7 +104,7 @@ public class ReaderService {
 			LinkedHashSet<Book> resultSet = br.searchBook(bookField, regex);
 
 			// Print the result
-			new AdminService().showAllBooks(resultSet);
+			new Book().showAllBooks(resultSet);
 
 			return resultSet;
 
@@ -118,7 +117,8 @@ public class ReaderService {
 
 	public void borrowBook(String user_name) {
 		// Print the Map
-		showMap(mapBookToItsRemaining());
+		BorrowedBooks bb = new BorrowedBooks();
+		bb.showMap(bb.mapBookToItsRemaining());
 
 		System.out.println("ID of book you want to borrow: ");
 		try {
@@ -150,7 +150,8 @@ public class ReaderService {
 	public void returnBook(String user_name) {
 
 		// Print the Map
-		showAllBorrowedBooks(getAllBorrowedBooks(user_name));
+		BorrowedBooks bb = new BorrowedBooks();
+		bb.showAllBorrowedBooks(bb.getAllBorrowedBooks(user_name));
 
 		System.out.println("ID of book you want to return: ");
 		try {
@@ -181,45 +182,6 @@ public class ReaderService {
 		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return;
-		}
-
-	}
-
-	public LinkedHashMap<Book, Integer> mapBookToItsRemaining() {
-		BorrowedBooksRepository bbr = new BorrowedBooksRepository();
-		try {
-			return bbr.mapBookToItsRemaining();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public void showMap(LinkedHashMap<Book, Integer> linkedHashMap) {
-		System.out.println("------");
-		Set<Book> keySet = linkedHashMap.keySet();
-		for (Book key : keySet) {
-			System.out.println(key + " remaining: " + linkedHashMap.get(key));
-		}
-		System.out.println("------");
-	}
-
-	public void showAllBorrowedBooks(LinkedHashSet<BorrowedBooks> linkedHashSet) {
-		System.out.println("------");
-		for (BorrowedBooks borrowedBook : linkedHashSet) {
-			System.out.println(borrowedBook);
-		}
-		System.out.println("------");
-
-	}
-
-	public LinkedHashSet<BorrowedBooks> getAllBorrowedBooks(String user_name) {
-		BorrowedBooksRepository bbr = new BorrowedBooksRepository();
-		try {
-			return bbr.getAllBorrowedBooks(user_name);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
 		}
 
 	}
