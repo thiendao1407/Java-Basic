@@ -41,9 +41,9 @@ public class MemberView {
 					break;
 
 				default:
-					System.out.println("\nPlease choose the correct options.");
+					throw new IllegalArgumentException("Please choose the correct options.");
 				}
-			} catch (NumberFormatException | IOException e) {
+			} catch (IllegalArgumentException | IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -76,10 +76,10 @@ public class MemberView {
 					break;
 
 				default:
-					System.out.println("\nPlease choose the correct options.");
+					throw new IllegalArgumentException("Please choose the correct options.");
 				}
 
-			} catch (NumberFormatException | IOException e) {
+			} catch (IOException | IllegalArgumentException e) {
 				e.printStackTrace();
 			}
 		}

@@ -23,7 +23,7 @@ public class Bill {
 		this.transaction_date = transaction_date;
 		this.returned_books = returned_books;
 		this.rental_fee = rental_fee;
-		this.amount = rental_fee * returned_books * transaction_date.until(bill_date, ChronoUnit.DAYS);
+		this.amount = rental_fee * returned_books * ChronoUnit.DAYS.between(transaction_date, transaction_date);
 		this.bill_status = bill_status;
 
 	}

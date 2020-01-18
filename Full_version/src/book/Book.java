@@ -2,8 +2,6 @@ package book;
 
 import java.time.LocalDate;
 
-import exception.InvalidValueException;
-
 public abstract class Book {
 	private String book_id;
 	private String title;
@@ -16,7 +14,11 @@ public abstract class Book {
 		AVAILABLE, RESERVED
 	}
 
-	public abstract String getSubject();
+	public enum BookSubject {
+		DICTIONARY, LITERATURE, SCIENCE_AND_TECHNOLOGY
+	}
+
+	public abstract BookSubject getSubject();
 
 	public abstract double getRentalFee();
 
@@ -24,9 +26,9 @@ public abstract class Book {
 		return book_id;
 	}
 
-	public void setBook_id(String book_id) throws InvalidValueException {
+	public void setBook_id(String book_id) {
 		if (book_id.isBlank())
-			throw new InvalidValueException("Book ID could not be blank");
+			throw new IllegalArgumentException("Book ID could not be blank");
 		this.book_id = book_id;
 	}
 
@@ -34,9 +36,9 @@ public abstract class Book {
 		return title;
 	}
 
-	public void setTitle(String title) throws InvalidValueException {
+	public void setTitle(String title) {
 		if (title.isBlank())
-			throw new InvalidValueException("Title of book could not be blank");
+			throw new IllegalArgumentException("Title of book could not be blank");
 		this.title = title;
 	}
 
@@ -64,9 +66,9 @@ public abstract class Book {
 		return number_of_books;
 	}
 
-	public void setNumber_of_books(int number_of_books) throws InvalidValueException {
+	public void setNumber_of_books(int number_of_books) {
 		if (number_of_books <= 0)
-			throw new InvalidValueException("This number must be greater than 0");
+			throw new IllegalArgumentException("This number must be greater than 0");
 		this.number_of_books = number_of_books;
 	}
 
@@ -80,13 +82,13 @@ public abstract class Book {
 		return book_status;
 	}
 
-	public void setBook_status(String book_status) throws InvalidValueException {
+	public void setBook_status(String book_status) {
 		if (book_status.equalsIgnoreCase("AVAILABLE")) {
 			this.book_status = BookStatus.AVAILABLE;
 		} else if (book_status.equalsIgnoreCase("RESERVED")) {
 			this.book_status = BookStatus.RESERVED;
 		} else
-			throw new InvalidValueException("Invalid type of book status: " + book_status);
+			throw new IllegalArgumentException("Invalid type of book status: " + book_status);
 	}
 
 }

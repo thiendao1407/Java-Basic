@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.LinkedHashSet;
 
 import account.Account;
-import exception.InvalidValueException;
 import exception.ValueNotFoundException;
 import repository.AccountRepository;
 import repository.BookRepository;
@@ -27,14 +26,14 @@ public class TransactionControl {
 			String account_id = bufferedReader.readLine();
 			Account account = accountRepository.getAccount(account_id);
 			if (account.isLibrarian())
-				throw new InvalidValueException("Librarian account is not authorized to borrow books");
+				throw new IllegalArgumentException("Librarian account is not authorized to borrow books");
 			if (!account.isActive())
-				throw new InvalidValueException("This account is not authorized to borrow books");
+				throw new IllegalArgumentException("This account is not authorized to borrow books");
 
 			System.out.println("Book ID: ");
 			String book_id = bufferedReader.readLine();
 			if (bookRepository.getBook_status(book_id).equalsIgnoreCase("RESERVED")) {
-				throw new InvalidValueException("This book is reserved");
+				throw new IllegalArgumentException("This book is reserved");
 			}
 
 			int remainingBook = transactionRepository.getNumberOfRemainingBook(book_id);
@@ -47,12 +46,12 @@ public class TransactionControl {
 			System.out.println("Number of books you want to issue: ");
 			int number = Integer.parseInt(bufferedReader.readLine());
 			if (number > remainingBook || number <= 0) {
-				throw new InvalidValueException();
+				throw new IllegalArgumentException();
 			}
 
 			transactionRepository.createTransaction(account_id, book_id, number);
 
-		} catch (IOException | ValueNotFoundException | InvalidValueException | SQLException e) {
+		} catch (IOException | ValueNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -81,19 +80,19 @@ public class TransactionControl {
 			}
 
 			if (yourTransaction == null) {
-				throw new InvalidValueException();
+				throw new IllegalArgumentException();
 			}
 
 			System.out.println("Number of books you want to return: ");
 			int number = Integer.parseInt(bufferedReader.readLine());
 
 			if (number > yourTransaction.getUnreturned_books() || number <= 0) {
-				throw new InvalidValueException();
+				throw new IllegalArgumentException();
 			}
 
 			transactionRepository.updateTransactionAndCreateBill(yourTransaction_id, number);
 
-		} catch (IOException | InvalidValueException | SQLException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -119,7 +118,7 @@ public class TransactionControl {
 				break;
 			}
 
-		} catch (NumberFormatException | IOException | SQLException | InvalidValueException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 		}
 

@@ -1,6 +1,7 @@
 package connectionpool;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public class DataSource {
 
@@ -11,7 +12,8 @@ public class DataSource {
 		return connection;
 	}
 
-	public static void returnConnection(Connection connection) {
+	public static void returnConnection(Connection connection) throws SQLException {
 		pool.returnConnectionToPool(connection);
 	}
+
 }

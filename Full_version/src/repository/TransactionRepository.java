@@ -9,7 +9,6 @@ import java.util.LinkedHashSet;
 
 import connectionpool.DataSource;
 import controller.MySqlInputValidityControl;
-import exception.InvalidValueException;
 import exception.ValueNotFoundException;
 import transaction.Bill;
 import transaction.Bill.BillStatus;
@@ -18,16 +17,15 @@ import transaction.Transaction;
 public class TransactionRepository implements MySqlInputValidityControl {
 
 	@Override
-	public void checkSqlInputValidity(String... val) throws InvalidValueException {
+	public void checkSqlInputValidity(String... val) {
 		for (String a : val) {
 			if (a.matches("(.*)[=;'\"](.*)")) {
-				throw new InvalidValueException("The values could not contain = ' \" and ;");
+				throw new IllegalArgumentException("The values could not contain = ' \" and ;");
 			}
 		}
 	}
 
-	public void createTransaction(String account_id, String book_id, int number)
-			throws SQLException, InvalidValueException {
+	public void createTransaction(String account_id, String book_id, int number) throws SQLException {
 		checkSqlInputValidity(account_id, book_id);
 
 		final String sql = "INSERT INTO transaction (account_id, book_id, transaction_date, issued_books, unreturned_books) "
@@ -102,8 +100,7 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public LinkedHashSet<Transaction> getSetOfOpenTransactions(String account_id)
-			throws SQLException, InvalidValueException {
+	public LinkedHashSet<Transaction> getSetOfOpenTransactions(String account_id) throws SQLException {
 		checkSqlInputValidity(account_id);
 
 		final String sql = "SELECT * FROM transaction WHERE account_id = ? AND unreturned_books > 0";
@@ -129,7 +126,7 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		return setOfTransactions;
 	}
 
-	public LinkedHashSet<Bill> getUnpaidBill(String account_id) throws SQLException, InvalidValueException {
+	public LinkedHashSet<Bill> getUnpaidBill(String account_id) throws SQLException {
 		checkSqlInputValidity(account_id);
 
 		final String sql = "SELECT * FROM bill WHERE account_id = ? AND bill_status = 'UNPAID'";
@@ -154,7 +151,7 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		return setOfBills;
 	}
 
-	public void payBills(String account_id) throws SQLException, InvalidValueException {
+	public void payBills(String account_id) throws SQLException {
 		checkSqlInputValidity(account_id);
 
 		final String sql = "UPDATE bill SET bill_status = 'PAID' WHERE account_id = ? AND bill_status = 'UNPAID'";
@@ -173,8 +170,7 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public int getNumberOfRemainingBook(String book_id)
-			throws ValueNotFoundException, SQLException, InvalidValueException {
+	public int getNumberOfRemainingBook(String book_id) throws ValueNotFoundException, SQLException {
 		checkSqlInputValidity(book_id);
 
 		final String sql = "SELECT b.book_id, number_of_books - IFNULL(SUM(unreturned_books), 0) AS remaining_books"

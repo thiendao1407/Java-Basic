@@ -3,63 +3,108 @@ package connectionpool;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class ConnectionPool {
-	List<Connection> availableConnections = new ArrayList<Connection>();
+	private int maxPoolSize;
+	private int initialPoolSize;
+	private String url;
+	private String username;
+	private String password;
+	long deadTime;
 
-	public ConnectionPool() {
+	Hashtable<Connection, Long> lock, unlock;
+
+	ConnectionPool() {
 		initializeConnectionPool();
 	}
 
 	private void initializeConnectionPool() {
-		while (!checkIfConnectionPoolIsFull()) {
-			availableConnections.add(createNewConnectionForPool());
+		deadTime = 50000; // 50 seconds
+		lock = new Hashtable<Connection, Long>();
+		unlock = new Hashtable<Connection, Long>();
+		maxPoolSize = Configuration.MAX_POOL_SIZE;
+		initialPoolSize = Configuration.INITIAL_POOL_SIZE;
+		url = Configuration.URL;
+		username = Configuration.USERNAME;
+		password = Configuration.PASSWORD;
+		for (int i = 0; i < initialPoolSize; i++) {
+			unlock.put(createNewConnectionForPool(), System.currentTimeMillis());
 		}
+
 	}
 
-	private synchronized boolean checkIfConnectionPoolIsFull() {
-		final int MAX_POOL_SIZE = Configuration.MAX_CONNECTIONS;
-
-		if (availableConnections.size() < MAX_POOL_SIZE) {
-			return false;
-		}
-
-		return true;
-	}
-
-	// Creating a connection
-	private Connection createNewConnectionForPool() {
+	Connection createNewConnectionForPool() {
 		try {
-			Connection connection = (Connection) DriverManager.getConnection(Configuration.URL, Configuration.USERNAME,
-					Configuration.PASSWORD);
-			return connection;
+			return DriverManager.getConnection(url, username, password);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	void dead(Connection connection) {
+		try {
+			((Connection) connection).close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return null;
-
 	}
 
-	public synchronized Connection getConnectionFromPool() {
-		Connection connection = null;
-		if (availableConnections.size() > 0) {
-			connection = (Connection) availableConnections.get(0);
-			availableConnections.remove(0);
-		}
-		return connection;
-	}
-
-	public synchronized void returnConnectionToPool(Connection connection) {
+	boolean validate(Connection connection) {
 		try {
-			if (connection.isClosed()) {
-				initializeConnectionPool();
-			} else {
-				availableConnections.add(connection);
+			return (!connection.isClosed());
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return (false);
+		}
+	}
+
+	synchronized Connection getConnectionFromPool() {
+		while (lock.size() == maxPoolSize) {
+			// Wait for an existing connection to be freed up.
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
+
+		long now = System.currentTimeMillis();
+		Connection connection;
+		if (unlock.size() > 0) {
+			Enumeration<Connection> e = unlock.keys();
+			while (e.hasMoreElements()) {
+				connection = e.nextElement();
+				if ((now - unlock.get(connection)) > deadTime) {
+					// object has dead
+					unlock.remove(connection);
+					dead(connection);
+					connection = null;
+				} else {
+					if (validate(connection)) {
+						unlock.remove(connection);
+						lock.put(connection, now);
+						return connection;
+					} else {
+						// object failed validation
+						unlock.remove(connection);
+						dead(connection);
+						connection = null;
+					}
+				}
+			}
+		}
+		// no objects available, create a new one
+		connection = createNewConnectionForPool();
+		lock.put(connection, now);
+		return (connection);
+	}
+
+	synchronized void returnConnectionToPool(Connection connection) {
+		lock.remove(connection);
+		unlock.put(connection, System.currentTimeMillis());
+		notifyAll();
 	}
 }

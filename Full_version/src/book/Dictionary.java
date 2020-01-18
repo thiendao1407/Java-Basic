@@ -3,8 +3,8 @@ package book;
 public class Dictionary extends Book {
 
 	@Override
-	public String getSubject() {
-		return "Dictionary";
+	public BookSubject getSubject() {
+		return BookSubject.DICTIONARY;
 	}
 
 	@Override

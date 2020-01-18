@@ -1,7 +1,5 @@
 package account;
 
-import exception.InvalidValueException;
-
 public class Person {
 
 	private String name;
@@ -28,9 +26,9 @@ public class Person {
 		return name;
 	}
 
-	public void setName(String name) throws InvalidValueException {
+	public void setName(String name) throws IllegalArgumentException {
 		if (name.isBlank())
-			throw new InvalidValueException("Name could not be blank");
+			throw new IllegalArgumentException("Name could not be blank");
 		this.name = name;
 	}
 

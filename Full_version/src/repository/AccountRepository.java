@@ -12,20 +12,19 @@ import account.Account.AccountStatus;
 import account.Person;
 import connectionpool.DataSource;
 import controller.MySqlInputValidityControl;
-import exception.InvalidValueException;
 
 public class AccountRepository implements MySqlInputValidityControl {
 
 	@Override
-	public void checkSqlInputValidity(String... val) throws InvalidValueException {
+	public void checkSqlInputValidity(String... val) {
 		for (String a : val) {
 			if (a.matches("(.*)[=;'\"](.*)")) {
-				throw new InvalidValueException("The values could not contain = ' \" and ;");
+				throw new IllegalArgumentException("The values could not contain = ' \" and ;");
 			}
 		}
 	}
 
-	public boolean existAccountID(String account_id) throws SQLException, InvalidValueException {
+	public boolean existAccountID(String account_id) throws SQLException {
 		checkSqlInputValidity(account_id);
 		boolean existAccountID = false;
 
@@ -77,7 +76,7 @@ public class AccountRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public Account getAccount(String account_id) throws SQLException, InvalidValueException {
+	public Account getAccount(String account_id) throws SQLException {
 		checkSqlInputValidity(account_id);
 
 		Account account = null;
@@ -93,7 +92,7 @@ public class AccountRepository implements MySqlInputValidityControl {
 					if (rs.first()) {
 						account = mapResultSetToAccount(rs);
 					} else {
-						throw new InvalidValueException("Account ID: '" + account_id + "' does not exist");
+						throw new IllegalArgumentException("Account ID: '" + account_id + "' does not exist");
 					}
 				}
 			}
@@ -104,7 +103,7 @@ public class AccountRepository implements MySqlInputValidityControl {
 		return account;
 	}
 
-	private Account mapResultSetToAccount(ResultSet rs) throws SQLException, InvalidValueException {
+	private Account mapResultSetToAccount(ResultSet rs) throws SQLException {
 
 		String account_id = rs.getString("account_id");
 		String password = rs.getString("password");
@@ -145,8 +144,7 @@ public class AccountRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public void updateAccount(String account_id, AccountStatus accountStatus)
-			throws SQLException, InvalidValueException {
+	public void updateAccount(String account_id, AccountStatus accountStatus) throws SQLException {
 		checkSqlInputValidity(account_id);
 
 		final String sql = "UPDATE account SET account_status = ? WHERE (account_id = ?)";
@@ -167,8 +165,7 @@ public class AccountRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public LinkedHashSet<Account> searchAccount(String column, String value, boolean isFixedValue)
-			throws SQLException, InvalidValueException {
+	public LinkedHashSet<Account> searchAccount(String column, String value, boolean isFixedValue) throws SQLException {
 		checkSqlInputValidity(column, value);
 
 		final String sql = isFixedValue == true ? "SELECT * FROM account WHERE " + column + " = ?"

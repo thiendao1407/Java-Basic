@@ -7,8 +7,9 @@ import java.sql.SQLException;
 import java.util.LinkedHashSet;
 
 import book.Book;
+import book.Book.BookStatus;
+import book.Book.BookSubject;
 import book.BookFactory;
-import exception.InvalidValueException;
 import exception.ValueAlreadyExistsException;
 import exception.ValueNotFoundException;
 import repository.BookRepository;
@@ -29,8 +30,7 @@ public class BookControl implements SearchBook {
 			setBookInformation(book, book_id);
 			bookRepository.addBook(book);
 
-		} catch (NumberFormatException | IOException | InvalidValueException | ValueAlreadyExistsException
-				| SQLException e) {
+		} catch (IOException | ValueAlreadyExistsException | SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -55,8 +55,7 @@ public class BookControl implements SearchBook {
 			setBookInformation(book, newBook_id);
 			bookRepository.editBook(book, oldBook_id);
 
-		} catch (NumberFormatException | IOException | InvalidValueException | ValueNotFoundException | SQLException
-				| ValueAlreadyExistsException e) {
+		} catch (IOException | ValueNotFoundException | SQLException | ValueAlreadyExistsException e) {
 			e.printStackTrace();
 		}
 	}
@@ -72,17 +71,13 @@ public class BookControl implements SearchBook {
 			}
 
 			bookRepository.deleteBook(book_id);
-		} catch (IOException | ValueNotFoundException | SQLException | InvalidValueException e) {
+		} catch (IOException | ValueNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public LinkedHashSet<Book> getAllBooks() {
-		return bookRepository.getAllBooksToSet();
-	}
-
-	public String getBookInstance() throws NumberFormatException, IOException, InvalidValueException {
+	public String getBookInstance() throws NumberFormatException, IOException {
 		System.out.println("Please choose the book subject" + "\n1. Science - Technology" + "\n2. Dictionary"
 				+ "\n3. Literature" + "\nYour choice: ");
 
@@ -95,7 +90,7 @@ public class BookControl implements SearchBook {
 		case 3:
 			return "Literature";
 		default:
-			throw new InvalidValueException("\nPlease choose the correct options.");
+			throw new IllegalArgumentException("\nPlease choose the correct options.");
 		}
 
 	}
@@ -109,7 +104,7 @@ public class BookControl implements SearchBook {
 			// Print the result
 			showBooks(resultSet);
 			return resultSet;
-		} catch (IOException | SQLException | InvalidValueException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -124,7 +119,7 @@ public class BookControl implements SearchBook {
 			// Print the result
 			showBooks(resultSet);
 			return resultSet;
-		} catch (IOException | SQLException | InvalidValueException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -132,28 +127,28 @@ public class BookControl implements SearchBook {
 
 	@Override
 	public LinkedHashSet<Book> searchBookBySubject() {
-		System.out.println("\nPlease choose subject\n1. Dictionary\n2. Science - Technology\n3. Literature");
-		String subject;
+		System.out.println("\nPlease choose subject\n1. Dictionary\n2. Science and Technology\n3. Literature");
+		String book_subject;
 		try {
 			int yourChoice = Integer.parseInt(bufferedReader.readLine());
 			switch (yourChoice) {
 			case 1:
-				subject = "Dictionary";
+				book_subject = BookSubject.DICTIONARY.toString();
 				break;
 			case 2:
-				subject = "Science - Technology";
+				book_subject = BookSubject.SCIENCE_AND_TECHNOLOGY.toString();
 				break;
 			case 3:
-				subject = "Literature";
+				book_subject = BookSubject.LITERATURE.toString();
 				break;
 			default:
-				throw new InvalidValueException("\nPlease choose the correct options.");
+				throw new IllegalArgumentException("\nPlease choose the correct options.");
 			}
-			LinkedHashSet<Book> resultSet = bookRepository.searchBook("subject", subject, true);
+			LinkedHashSet<Book> resultSet = bookRepository.searchBook("subject", book_subject, true);
 			// Print the result
 			showBooks(resultSet);
 			return resultSet;
-		} catch (NumberFormatException | IOException | InvalidValueException | SQLException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -170,7 +165,7 @@ public class BookControl implements SearchBook {
 		System.out.println("------");
 	}
 
-	private void setBookInformation(Book book, String book_id) throws InvalidValueException, IOException {
+	private void setBookInformation(Book book, String book_id) throws IOException {
 		book.setBook_id(book_id);
 
 		System.out.print("Title of book: ");
@@ -190,17 +185,17 @@ public class BookControl implements SearchBook {
 
 	}
 
-	private String chooseBookStatus() throws NumberFormatException, IOException, InvalidValueException {
+	private String chooseBookStatus() throws NumberFormatException, IOException {
 		System.out.println("\n1. Available" + "\n2. Reserved" + "\nYour choice: ");
 
 		int yourChoice = Integer.parseInt(bufferedReader.readLine());
 		switch (yourChoice) {
 		case 1:
-			return "Available";
+			return BookStatus.AVAILABLE.toString();
 		case 2:
-			return "Reserved";
+			return BookStatus.RESERVED.toString();
 		default:
-			throw new InvalidValueException("\nPlease choose the correct options.");
+			throw new IllegalArgumentException("\nPlease choose the correct options.");
 		}
 
 	}

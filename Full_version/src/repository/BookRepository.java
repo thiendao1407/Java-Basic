@@ -11,26 +11,20 @@ import book.Book;
 import book.BookFactory;
 import connectionpool.DataSource;
 import controller.MySqlInputValidityControl;
-import exception.InvalidValueException;
 import exception.ValueNotFoundException;
 
 public class BookRepository implements MySqlInputValidityControl {
 
 	@Override
-	public void checkSqlInputValidity(String... val) throws InvalidValueException {
+	public void checkSqlInputValidity(String... val) {
 		for (String a : val) {
 			if (a.matches("(.*)[=;'\"](.*)")) {
-				throw new InvalidValueException("The values could not contain = ' \" and ;");
+				throw new IllegalArgumentException("The values could not contain = ' \" and ;");
 			}
 		}
 	}
 
-	public LinkedHashSet<Book> getAllBooksToSet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Book getBook(String book_id) throws SQLException, InvalidValueException, ValueNotFoundException {
+	public Book getBook(String book_id) throws SQLException, ValueNotFoundException {
 		checkSqlInputValidity(book_id);
 
 		final String sql = "SELECT * FROM book " + "WHERE book_id = ?";
@@ -56,7 +50,7 @@ public class BookRepository implements MySqlInputValidityControl {
 		return book;
 	}
 
-	public boolean existBookId(String book_id) throws SQLException, InvalidValueException {
+	public boolean existBookId(String book_id) throws SQLException {
 		checkSqlInputValidity(book_id);
 
 		boolean existBookId = false;
@@ -98,7 +92,7 @@ public class BookRepository implements MySqlInputValidityControl {
 				ps.setString(index++, book.getPublish_date() == null ? null : book.getPublish_date().toString());
 				ps.setInt(index++, book.getNumber_of_books());
 				ps.setString(index++, book.getBook_status().toString());
-				ps.setString(index++, book.getSubject());
+				ps.setString(index++, book.getSubject().toString());
 				ps.setDouble(index++, book.getRentalFee());
 
 				ps.executeUpdate();
@@ -110,7 +104,7 @@ public class BookRepository implements MySqlInputValidityControl {
 
 	}
 
-	public void editBook(Book book, String oldBook_id) throws SQLException, InvalidValueException {
+	public void editBook(Book book, String oldBook_id) throws SQLException {
 
 		checkSqlInputValidity(oldBook_id);
 
@@ -128,7 +122,7 @@ public class BookRepository implements MySqlInputValidityControl {
 				ps.setString(index++, book.getPublish_date() == null ? null : book.getPublish_date().toString());
 				ps.setInt(index++, book.getNumber_of_books());
 				ps.setString(index++, book.getBook_status().toString());
-				ps.setString(index++, book.getSubject());
+				ps.setString(index++, book.getSubject().toString());
 				ps.setDouble(index++, book.getRentalFee());
 				ps.setString(index++, oldBook_id);
 
@@ -140,7 +134,7 @@ public class BookRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public void deleteBook(String book_id) throws SQLException, InvalidValueException {
+	public void deleteBook(String book_id) throws SQLException {
 		checkSqlInputValidity(book_id);
 
 		final String sql = "DELETE FROM book" + " WHERE book_id = '" + book_id + "'";
@@ -158,8 +152,7 @@ public class BookRepository implements MySqlInputValidityControl {
 		}
 	}
 
-	public LinkedHashSet<Book> searchBook(String column, String value, boolean isFixedValue)
-			throws SQLException, InvalidValueException {
+	public LinkedHashSet<Book> searchBook(String column, String value, boolean isFixedValue) throws SQLException {
 		checkSqlInputValidity(column, value);
 
 		final String sql = isFixedValue == true ? "SELECT * FROM book WHERE " + column + " = ?"
@@ -186,7 +179,7 @@ public class BookRepository implements MySqlInputValidityControl {
 		return setOfBooks;
 	}
 
-	private Book mapResultSetToBook(ResultSet rs) throws SQLException, InvalidValueException {
+	private Book mapResultSetToBook(ResultSet rs) throws SQLException {
 		String book_id = rs.getString("book_id");
 		String title = rs.getString("title");
 		String author = rs.getString("author");
@@ -206,7 +199,7 @@ public class BookRepository implements MySqlInputValidityControl {
 		return book;
 	}
 
-	public String getBook_status(String book_id) throws SQLException, ValueNotFoundException, InvalidValueException {
+	public String getBook_status(String book_id) throws SQLException, ValueNotFoundException {
 		checkSqlInputValidity(book_id);
 
 		final String sql = "SELECT book_id, book_status FROM book " + "WHERE book_id = ?";

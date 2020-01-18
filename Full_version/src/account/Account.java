@@ -4,8 +4,6 @@ import static view.Main.bufferedReader;
 
 import java.io.IOException;
 
-import exception.InvalidValueException;
-
 public class Account {
 	private String account_id;
 	private String password;
@@ -23,8 +21,7 @@ public class Account {
 		LIBRARIAN, MEMBER
 	}
 
-	public Account(String account_id, String password, String account_status, String account_type, Person person)
-			throws InvalidValueException {
+	public Account(String account_id, String password, String account_status, String account_type, Person person) {
 		setAccount_id(account_id);
 		setPassword(password);
 		setAccountStatus(account_status);
@@ -35,7 +32,7 @@ public class Account {
 		setPerson(person);
 	}
 
-	public Account() throws NumberFormatException, IOException, InvalidValueException {
+	public Account() throws NumberFormatException, IOException {
 		System.out.println("\nPlease choose your account type" + "\n1. Librarian" + "\n2. Member" + "\nYour choice: ");
 
 		int yourChoice = Integer.parseInt(bufferedReader.readLine());
@@ -47,7 +44,7 @@ public class Account {
 			this.account_type = AccountType.MEMBER;
 			break;
 		default:
-			throw new InvalidValueException("\nPlease choose the correct options.");
+			throw new IllegalArgumentException("\nPlease choose the correct options.");
 		}
 	}
 
@@ -85,7 +82,7 @@ public class Account {
 		return account_status;
 	}
 
-	public void setAccountStatus(String status) throws InvalidValueException {
+	public void setAccountStatus(String status) {
 		if (status.equalsIgnoreCase("ACTIVE")) {
 			this.account_status = AccountStatus.ACTIVE;
 		} else if (status.equalsIgnoreCase("BLACKLISTED")) {
@@ -95,7 +92,7 @@ public class Account {
 		} else if (status.equalsIgnoreCase("REQUESTED")) {
 			this.account_status = AccountStatus.REQUESTED;
 		} else
-			throw new InvalidValueException("Invalid type of account status: " + status);
+			throw new IllegalArgumentException("Invalid type of account status: " + status);
 	}
 
 	//
@@ -117,9 +114,9 @@ public class Account {
 		return account_id;
 	}
 
-	public void setAccount_id(String id) throws InvalidValueException {
+	public void setAccount_id(String id) {
 		if (id.isBlank())
-			throw new InvalidValueException("ID could not be blank");
+			throw new IllegalArgumentException("ID could not be blank");
 		this.account_id = id;
 	}
 
@@ -128,9 +125,9 @@ public class Account {
 		return password;
 	}
 
-	public void setPassword(String password) throws InvalidValueException {
+	public void setPassword(String password) {
 		if (password.isBlank())
-			throw new InvalidValueException("Password could not be blank");
+			throw new IllegalArgumentException("Password could not be blank");
 		this.password = password;
 	}
 }

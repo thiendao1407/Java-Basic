@@ -10,7 +10,6 @@ import account.Account;
 import account.Account.AccountStatus;
 import account.Person;
 import exception.FailedLoginException;
-import exception.InvalidValueException;
 import exception.ValueAlreadyExistsException;
 import exception.ValueNotFoundException;
 import repository.AccountRepository;
@@ -51,8 +50,7 @@ public class AccountControl implements SearchAccount {
 			else if (account.isMember())
 				new MemberView().showMenu(account);
 
-		} catch (FailedLoginException | IllegalArgumentException | IOException | InvalidValueException
-				| SQLException e) {
+		} catch (FailedLoginException | IOException | SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -72,7 +70,7 @@ public class AccountControl implements SearchAccount {
 			accountRepository.insertAccount(account);
 			System.out.println("Request sent successfully, your account is awaiting verification.");
 
-		} catch (InvalidValueException | IOException | ValueAlreadyExistsException | SQLException e) {
+		} catch (IOException | ValueAlreadyExistsException | SQLException e) {
 			e.printStackTrace();
 		}
 
@@ -83,7 +81,7 @@ public class AccountControl implements SearchAccount {
 			setAccountInformation(account);
 			accountRepository.updateAccount(account);
 			throw new FailedLoginException("Your account is awaiting verification.");
-		} catch (InvalidValueException | IOException | SQLException e) {
+		} catch (SQLException | IOException e) {
 			e.printStackTrace();
 			return;
 		}
@@ -107,8 +105,7 @@ public class AccountControl implements SearchAccount {
 			if (yourAccount.isRequested()) {
 				throw new FailedLoginException("Your account is awaiting verification.");
 			}
-		} catch (IOException | ValueNotFoundException | SQLException | NumberFormatException
-				| InvalidValueException e) {
+		} catch (IOException | ValueNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 
@@ -124,7 +121,7 @@ public class AccountControl implements SearchAccount {
 			showAccounts(resultSet);
 
 			return resultSet;
-		} catch (IOException | SQLException | InvalidValueException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -151,7 +148,7 @@ public class AccountControl implements SearchAccount {
 				status = "REQUESTED";
 				break;
 			default:
-				throw new InvalidValueException("\nPlease choose the correct options.");
+				throw new IllegalArgumentException("\nPlease choose the correct options.");
 			}
 			LinkedHashSet<Account> resultSet = accountRepository.searchAccount("account_status", status, true);
 			// Print the result
@@ -159,7 +156,7 @@ public class AccountControl implements SearchAccount {
 			showAccounts(resultSet);
 
 			return resultSet;
-		} catch (NumberFormatException | IOException | InvalidValueException | SQLException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -179,7 +176,7 @@ public class AccountControl implements SearchAccount {
 				type = "MEMBER";
 				break;
 			default:
-				throw new InvalidValueException("\nPlease choose the correct options.");
+				throw new IllegalArgumentException("\nPlease choose the correct options.");
 			}
 			LinkedHashSet<Account> resultSet = accountRepository.searchAccount("account_type", type, true);
 			// Print the result
@@ -187,13 +184,13 @@ public class AccountControl implements SearchAccount {
 			showAccounts(resultSet);
 
 			return resultSet;
-		} catch (NumberFormatException | IOException | InvalidValueException | SQLException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	private AccountStatus setAccountStatus() throws NumberFormatException, IOException, InvalidValueException {
+	private AccountStatus setAccountStatus() throws NumberFormatException, IOException {
 		System.out.println("----------------" + "\nAccount Status" + "\n1. Active" + "\n2. Black listed" + "\n3. Locked"
 				+ "\nYour choice: ");
 
@@ -206,11 +203,11 @@ public class AccountControl implements SearchAccount {
 		case 3:
 			return AccountStatus.LOCKED;
 		default:
-			throw new InvalidValueException("\nPlease choose the correct options.");
+			throw new IllegalArgumentException("\nPlease choose the correct options.");
 		}
 	}
 
-	private void setAccountInformation(Account account) throws InvalidValueException, IOException {
+	private void setAccountInformation(Account account) throws IOException {
 		System.out.println("Please enter account name: ");
 		account.getPerson().setName(bufferedReader.readLine());
 		System.out.println("Please enter account password: ");
@@ -226,7 +223,7 @@ public class AccountControl implements SearchAccount {
 		account.getPerson().setPhone(bufferedReader.readLine());
 	}
 
-	private void setAccountInformation(Account account, String account_id) throws InvalidValueException, IOException {
+	private void setAccountInformation(Account account, String account_id) throws IOException {
 		account.setAccount_id(account_id);
 		System.out.println("Please enter account password: ");
 		account.setPassword(bufferedReader.readLine());
