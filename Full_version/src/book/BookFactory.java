@@ -5,13 +5,13 @@ public class BookFactory {
 		if (subject == null) {
 			throw new IllegalArgumentException();
 		}
-		if (subject.equalsIgnoreCase("Science - Technology")) {
+		if (subject.equalsIgnoreCase("SCIENCE_AND_TECHNOLOGY")) {
 			return new ScienceAndTechnology();
 
-		} else if (subject.equalsIgnoreCase("Dictionary")) {
+		} else if (subject.equalsIgnoreCase("DICTIONARY")) {
 			return new Dictionary();
 
-		} else if (subject.equalsIgnoreCase("Literature")) {
+		} else if (subject.equalsIgnoreCase("LITERATURE")) {
 			return new Literature();
 		} else
 			throw new IllegalArgumentException();
