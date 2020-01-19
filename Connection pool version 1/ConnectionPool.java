@@ -107,6 +107,7 @@ public class ConnectionPool {
 			lock.remove(connection);
 			unlock.put(connection, System.currentTimeMillis());
 			notifyAll();
-		}	
+		}
+		
 	}
 }
