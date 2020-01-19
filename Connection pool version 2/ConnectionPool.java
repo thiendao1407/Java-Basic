@@ -87,9 +87,11 @@ public class ConnectionPool {
 	}
 
 	synchronized void returnConnectionToPool(MyConnection myConnection) {
-		lock.remove(myConnection);
-		unlock.put(myConnection, System.currentTimeMillis());
-		notifyAll();
+		if (lock.containsKey(myConnection)) {
+			lock.remove(myConnection);
+			unlock.put(myConnection, System.currentTimeMillis());
+			notifyAll();
+		}
 	}
 
 }

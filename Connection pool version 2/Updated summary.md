@@ -7,4 +7,4 @@
 		}
 
 - Remove validate() method from 'ConnectionPool'
-- Change the visibility of returnConnection() method of 'DataSource' to default. Now we can only use this method indirectly outside the 'connectionpool' package by calling close () method and we do not need to check if Hashtable<Connection, Long> 'lock' contains the returning connection or not 
+- Change the visibility of returnConnection() method of 'DataSource' to default. Now we can only use this method indirectly outside the 'connectionpool' package by calling close () method
