@@ -31,22 +31,16 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		final String sql = "INSERT INTO transaction (account_id, book_id, transaction_date, issued_books, unreturned_books) "
 				+ "VALUES (?, ?, ?, ?, ?)";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				int index = 1;
-				ps.setString(index++, account_id);
-				ps.setString(index++, book_id);
-				ps.setString(index++, LocalDate.now().toString());
-				ps.setInt(index++, number);
-				ps.setInt(index++, number);
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			int index = 1;
+			ps.setString(index++, account_id);
+			ps.setString(index++, book_id);
+			ps.setString(index++, LocalDate.now().toString());
+			ps.setInt(index++, number);
+			ps.setInt(index++, number);
 
-				ps.executeUpdate();
-				System.out.println("\nTransaction inserted successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.executeUpdate();
+			System.out.println("\nTransaction inserted successfully.");
 		}
 
 	}
@@ -62,41 +56,36 @@ public class TransactionRepository implements MySqlInputValidityControl {
 
 		Bill bill = null;
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps1 = con.prepareStatement(sql_update_transaction);
-					PreparedStatement ps2 = con.prepareStatement(sql_get_bill_instance);
-					PreparedStatement ps3 = con.prepareStatement(sql_insert_bill)) {
-				// Update transaction
-				ps1.setInt(1, number);
-				ps1.setInt(2, yourTransaction_id);
+		try (Connection con = DataSource.getConnection();
+				PreparedStatement ps1 = con.prepareStatement(sql_update_transaction);
+				PreparedStatement ps2 = con.prepareStatement(sql_get_bill_instance);
+				PreparedStatement ps3 = con.prepareStatement(sql_insert_bill)) {
+			// Update transaction
+			ps1.setInt(1, number);
+			ps1.setInt(2, yourTransaction_id);
 
-				ps1.executeUpdate();
-				System.out.println("\nTransaction updated sucessfully.");
+			ps1.executeUpdate();
+			System.out.println("\nTransaction updated sucessfully.");
 
-				// Create bill
-				ps2.setInt(1, yourTransaction_id);
-				try (ResultSet rs = ps2.executeQuery()) {
-					if (rs.next()) {
-						bill = mapResultSetToBill(rs, number);
-					}
+			// Create bill
+			ps2.setInt(1, yourTransaction_id);
+			try (ResultSet rs = ps2.executeQuery()) {
+				if (rs.next()) {
+					bill = mapResultSetToBill(rs, number);
 				}
-				int index = 1;
-				ps3.setString(index++, bill.getAccount_id());
-				ps3.setInt(index++, bill.getTransaction_id());
-				ps3.setString(index++, bill.getBill_date().toString());
-				ps3.setString(index++, bill.getTransaction_date().toString());
-				ps3.setInt(index++, bill.getReturned_books());
-				ps3.setDouble(index++, bill.getRental_fee());
-				ps3.setDouble(index++, bill.getAmount());
-				ps3.setString(index++, bill.getBill_status().toString());
-
-				ps3.executeUpdate();
-				System.out.println("\nBill inserted successfully.");
 			}
-		} finally {
-			DataSource.returnConnection(con);
+			int index = 1;
+			ps3.setString(index++, bill.getAccount_id());
+			ps3.setInt(index++, bill.getTransaction_id());
+			ps3.setString(index++, bill.getBill_date().toString());
+			ps3.setString(index++, bill.getTransaction_date().toString());
+			ps3.setInt(index++, bill.getReturned_books());
+			ps3.setDouble(index++, bill.getRental_fee());
+			ps3.setDouble(index++, bill.getAmount());
+			ps3.setString(index++, bill.getBill_status().toString());
+
+			ps3.executeUpdate();
+			System.out.println("\nBill inserted successfully.");
 		}
 	}
 
@@ -106,21 +95,15 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		final String sql = "SELECT * FROM transaction WHERE account_id = ? AND unreturned_books > 0";
 		LinkedHashSet<Transaction> setOfTransactions = new LinkedHashSet<Transaction>();
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, account_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					while (rs.next()) {
-						Transaction transaction = mapResultSetToTransaction(rs);
-						setOfTransactions.add(transaction);
-					}
+			ps.setString(1, account_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					Transaction transaction = mapResultSetToTransaction(rs);
+					setOfTransactions.add(transaction);
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return setOfTransactions;
@@ -132,22 +115,17 @@ public class TransactionRepository implements MySqlInputValidityControl {
 		final String sql = "SELECT * FROM bill WHERE account_id = ? AND bill_status = 'UNPAID'";
 		LinkedHashSet<Bill> setOfBills = new LinkedHashSet<Bill>();
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, account_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					while (rs.next()) {
-						Bill bill = mapResultSetToBill(rs);
-						setOfBills.add(bill);
-					}
+			ps.setString(1, account_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					Bill bill = mapResultSetToBill(rs);
+					setOfBills.add(bill);
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
+
 		return setOfBills;
 	}
 
@@ -156,18 +134,13 @@ public class TransactionRepository implements MySqlInputValidityControl {
 
 		final String sql = "UPDATE bill SET bill_status = 'PAID' WHERE account_id = ? AND bill_status = 'UNPAID'";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, account_id);
-				ps.executeUpdate();
-				System.out.println("\nBill paid successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.setString(1, account_id);
+			ps.executeUpdate();
+			System.out.println("\nBill paid successfully.");
 		}
+
 	}
 
 	public int getNumberOfRemainingBook(String book_id) throws ValueNotFoundException, SQLException {
@@ -177,21 +150,15 @@ public class TransactionRepository implements MySqlInputValidityControl {
 				+ " FROM book AS b LEFT JOIN transaction AS t ON b.book_id = t.book_id "
 				+ "WHERE b.book_id = ? GROUP BY b.book_id";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, book_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.first()) {
-						return rs.getInt("remaining_books");
-					} else
-						throw new ValueNotFoundException("This ID: " + book_id + "does not exists");
-				}
+			ps.setString(1, book_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.first()) {
+					return rs.getInt("remaining_books");
+				} else
+					throw new ValueNotFoundException("This ID: " + book_id + "does not exists");
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 	}
 

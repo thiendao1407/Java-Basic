@@ -30,22 +30,17 @@ public class AccountRepository implements MySqlInputValidityControl {
 
 		final String sql = "SELECT account_id FROM account " + "WHERE account_id = ?";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				ps.setString(1, account_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.first()) {
-						existAccountID = true;
-					} else {
-						// do nothing
-					}
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.setString(1, account_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.first()) {
+					existAccountID = true;
+				} else {
+					// do nothing
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
+
 		return existAccountID;
 	}
 
@@ -54,26 +49,21 @@ public class AccountRepository implements MySqlInputValidityControl {
 
 		final String sql = "INSERT INTO account VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, account.getAccount_id());
-				ps.setString(2, account.getPassword());
-				ps.setString(3, account.getAccountStatus().toString());
-				ps.setString(4, account.getAccount_type().toString());
-				ps.setString(5, account.getPerson().getName());
-				ps.setString(6, account.getPerson().getAddress());
-				ps.setString(7, account.getPerson().getEmail());
-				ps.setString(8, account.getPerson().getPhone());
+			ps.setString(1, account.getAccount_id());
+			ps.setString(2, account.getPassword());
+			ps.setString(3, account.getAccountStatus().toString());
+			ps.setString(4, account.getAccount_type().toString());
+			ps.setString(5, account.getPerson().getName());
+			ps.setString(6, account.getPerson().getAddress());
+			ps.setString(7, account.getPerson().getEmail());
+			ps.setString(8, account.getPerson().getPhone());
 
-				ps.executeUpdate();
-				System.out.println("\nAccount inserted successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.executeUpdate();
+			System.out.println("\nAccount inserted successfully.");
 		}
+
 	}
 
 	public Account getAccount(String account_id) throws SQLException {
@@ -83,21 +73,15 @@ public class AccountRepository implements MySqlInputValidityControl {
 
 		final String sql = "SELECT * FROM account WHERE account_id = '" + account_id + "'";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (Statement stmt = con.createStatement()) {
+		try (Connection con = DataSource.getConnection(); Statement stmt = con.createStatement()) {
 
-				try (ResultSet rs = stmt.executeQuery(sql)) {
-					if (rs.first()) {
-						account = mapResultSetToAccount(rs);
-					} else {
-						throw new IllegalArgumentException("Account ID: '" + account_id + "' does not exist");
-					}
+			try (ResultSet rs = stmt.executeQuery(sql)) {
+				if (rs.first()) {
+					account = mapResultSetToAccount(rs);
+				} else {
+					throw new IllegalArgumentException("Account ID: '" + account_id + "' does not exist");
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return account;
@@ -122,25 +106,19 @@ public class AccountRepository implements MySqlInputValidityControl {
 		final String sql = "UPDATE account SET password = ?, account_status = ?, account_type = ?, name = ?, "
 				+ "address = ?, email = ?, phone  = ? WHERE (account_id = ?)";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, account.getPassword());
-				ps.setString(2, account.getAccountStatus().toString());
-				ps.setString(3, account.getAccount_type().toString());
-				ps.setString(4, account.getPerson().getName());
-				ps.setString(5, account.getPerson().getAddress());
-				ps.setString(6, account.getPerson().getEmail());
-				ps.setString(7, account.getPerson().getPhone());
-				ps.setString(8, account.getAccount_id());
+			ps.setString(1, account.getPassword());
+			ps.setString(2, account.getAccountStatus().toString());
+			ps.setString(3, account.getAccount_type().toString());
+			ps.setString(4, account.getPerson().getName());
+			ps.setString(5, account.getPerson().getAddress());
+			ps.setString(6, account.getPerson().getEmail());
+			ps.setString(7, account.getPerson().getPhone());
+			ps.setString(8, account.getAccount_id());
 
-				ps.executeUpdate();
-				System.out.println("\nAccount updated successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.executeUpdate();
+			System.out.println("\nAccount updated successfully.");
 		}
 	}
 
@@ -149,19 +127,13 @@ public class AccountRepository implements MySqlInputValidityControl {
 
 		final String sql = "UPDATE account SET account_status = ? WHERE (account_id = ?)";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, accountStatus.toString());
-				ps.setString(2, account_id);
+			ps.setString(1, accountStatus.toString());
+			ps.setString(2, account_id);
 
-				ps.executeUpdate();
-				System.out.println("\nAccount status updated successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.executeUpdate();
+			System.out.println("\nAccount status updated successfully.");
 		}
 	}
 
@@ -173,21 +145,15 @@ public class AccountRepository implements MySqlInputValidityControl {
 
 		LinkedHashSet<Account> setOfAccounts = new LinkedHashSet<Account>();
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, value);
-				try (ResultSet rs = ps.executeQuery()) {
-					while (rs.next()) {
-						Account account = mapResultSetToAccount(rs);
-						setOfAccounts.add(account);
-					}
+			ps.setString(1, value);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					Account account = mapResultSetToAccount(rs);
+					setOfAccounts.add(account);
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return setOfAccounts;

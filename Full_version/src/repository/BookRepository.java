@@ -31,20 +31,14 @@ public class BookRepository implements MySqlInputValidityControl {
 
 		Book book = null;
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				ps.setString(1, book_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.next()) {
-						book = mapResultSetToBook(rs);
-					} else
-						throw new ValueNotFoundException("This ID does not exist");
-				}
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.setString(1, book_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					book = mapResultSetToBook(rs);
+				} else
+					throw new ValueNotFoundException("This ID does not exist");
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return book;
@@ -57,21 +51,15 @@ public class BookRepository implements MySqlInputValidityControl {
 
 		final String sql = "SELECT book_id FROM book " + "WHERE book_id = ?";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				ps.setString(1, book_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.first()) {
-						existBookId = true;
-					} else {
-						// do nothing
-					}
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.setString(1, book_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.first()) {
+					existBookId = true;
+				} else {
+					// do nothing
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return existBookId;
@@ -81,25 +69,19 @@ public class BookRepository implements MySqlInputValidityControl {
 		final String sql = "INSERT INTO book (book_id, title, author, publish_date, number_of_books, book_status, subject, rental_fee) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				int index = 1;
-				ps.setString(index++, book.getBook_id());
-				ps.setString(index++, book.getTitle());
-				ps.setString(index++, book.getAuthor());
-				ps.setString(index++, book.getPublish_date() == null ? null : book.getPublish_date().toString());
-				ps.setInt(index++, book.getNumber_of_books());
-				ps.setString(index++, book.getBook_status().toString());
-				ps.setString(index++, book.getSubject().toString());
-				ps.setDouble(index++, book.getRentalFee());
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			int index = 1;
+			ps.setString(index++, book.getBook_id());
+			ps.setString(index++, book.getTitle());
+			ps.setString(index++, book.getAuthor());
+			ps.setString(index++, book.getPublish_date() == null ? null : book.getPublish_date().toString());
+			ps.setInt(index++, book.getNumber_of_books());
+			ps.setString(index++, book.getBook_status().toString());
+			ps.setString(index++, book.getSubject().toString());
+			ps.setDouble(index++, book.getRentalFee());
 
-				ps.executeUpdate();
-				System.out.println("\nBook inserted successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.executeUpdate();
+			System.out.println("\nBook inserted successfully.");
 		}
 
 	}
@@ -111,26 +93,20 @@ public class BookRepository implements MySqlInputValidityControl {
 		final String sql = "UPDATE book SET book_id = ?, title = ?, author = ?, publish_date = ?, "
 				+ "number_of_books = ?, book_status = ?, subject = ?, rental_fee  = ? WHERE (book_id = ?)";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				int index = 1;
-				ps.setString(index++, book.getBook_id());
-				ps.setString(index++, book.getTitle());
-				ps.setString(index++, book.getAuthor());
-				ps.setString(index++, book.getPublish_date() == null ? null : book.getPublish_date().toString());
-				ps.setInt(index++, book.getNumber_of_books());
-				ps.setString(index++, book.getBook_status().toString());
-				ps.setString(index++, book.getSubject().toString());
-				ps.setDouble(index++, book.getRentalFee());
-				ps.setString(index++, oldBook_id);
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			int index = 1;
+			ps.setString(index++, book.getBook_id());
+			ps.setString(index++, book.getTitle());
+			ps.setString(index++, book.getAuthor());
+			ps.setString(index++, book.getPublish_date() == null ? null : book.getPublish_date().toString());
+			ps.setInt(index++, book.getNumber_of_books());
+			ps.setString(index++, book.getBook_status().toString());
+			ps.setString(index++, book.getSubject().toString());
+			ps.setDouble(index++, book.getRentalFee());
+			ps.setString(index++, oldBook_id);
 
-				ps.executeUpdate();
-				System.out.println("\nBook updated successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			ps.executeUpdate();
+			System.out.println("\nBook updated successfully.");
 		}
 	}
 
@@ -139,16 +115,10 @@ public class BookRepository implements MySqlInputValidityControl {
 
 		final String sql = "DELETE FROM book" + " WHERE book_id = '" + book_id + "'";
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (Statement stmt = con.createStatement()) {
+		try (Connection con = DataSource.getConnection(); Statement stmt = con.createStatement()) {
 
-				stmt.executeUpdate(sql);
-				System.out.println("\nBook deleted successfully.");
-			}
-		} finally {
-			DataSource.returnConnection(con);
+			stmt.executeUpdate(sql);
+			System.out.println("\nBook deleted successfully.");
 		}
 	}
 
@@ -159,21 +129,15 @@ public class BookRepository implements MySqlInputValidityControl {
 				: "SELECT * FROM book WHERE " + column + " LIKE ?";
 		LinkedHashSet<Book> setOfBooks = new LinkedHashSet<Book>();
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-				ps.setString(1, value);
-				try (ResultSet rs = ps.executeQuery()) {
-					while (rs.next()) {
-						Book book = mapResultSetToBook(rs);
-						setOfBooks.add(book);
-					}
+			ps.setString(1, value);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					Book book = mapResultSetToBook(rs);
+					setOfBooks.add(book);
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return setOfBooks;
@@ -206,21 +170,15 @@ public class BookRepository implements MySqlInputValidityControl {
 
 		String book_status = null;
 
-		Connection con = null;
-		try {
-			con = DataSource.getConnection();
-			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				ps.setString(1, book_id);
-				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.first()) {
-						book_status = rs.getString("book_status");
-					} else {
-						throw new ValueNotFoundException("This ID does not exist");
-					}
+		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.setString(1, book_id);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.first()) {
+					book_status = rs.getString("book_status");
+				} else {
+					throw new ValueNotFoundException("This ID does not exist");
 				}
 			}
-		} finally {
-			DataSource.returnConnection(con);
 		}
 
 		return book_status;
