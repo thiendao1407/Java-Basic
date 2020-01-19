@@ -31,16 +31,16 @@ public class MyConnection implements Connection {
 
 	// Our new method (don't set public)
 	// ------------------------
+	Connection getRealConnection() {
+		return this.realConnection;
+	}
+
 	void actuallyClose() throws SQLException {
 		this.realConnection.close();
 	}
 
 	boolean isActuallyClosed() throws SQLException {
 		return this.realConnection.isClosed();
-	}
-
-	void setMyConnectionToBeOpen() {
-		isClosed = false;
 	}
 
 	// ------------------------

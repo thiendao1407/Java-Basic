@@ -115,7 +115,7 @@ public class AccountControl implements SearchAccount {
 	public LinkedHashSet<Account> searchAccountByName() {
 		System.out.println("Please enter account name (No full name required): ");
 		try {
-			String regex = "%" + bufferedReader.readLine() + "%";
+			String regex = "%" + bufferedReader.readLine().toLowerCase() + "%";
 			LinkedHashSet<Account> resultSet = accountRepository.searchAccount("name", regex, false);
 			// Print the result
 			showAccounts(resultSet);

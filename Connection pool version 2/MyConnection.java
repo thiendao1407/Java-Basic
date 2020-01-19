@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
 
 public class MyConnection implements Connection {
 
-	private Connection realConnection; // connection thật
+	private Connection realConnection;
 	private boolean isClosed;
 
 	public MyConnection(Connection realConnection) {
@@ -29,18 +29,18 @@ public class MyConnection implements Connection {
 		isClosed = false;
 	}
 
-	// your new method (don't set public)
+	// Our new method (don't set public)
 	// ------------------------
+	Connection getRealConnection() {
+		return this.realConnection;
+	}
+
 	void actuallyClose() throws SQLException {
 		this.realConnection.close();
 	}
 
 	boolean isActuallyClosed() throws SQLException {
 		return this.realConnection.isClosed();
-	}
-
-	void setMyConnectionToBeOpen() {
-		isClosed = false;
 	}
 
 	// ------------------------

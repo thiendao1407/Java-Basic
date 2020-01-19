@@ -1,5 +1,6 @@
 package connectionpool;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
@@ -36,7 +37,8 @@ public class ConnectionPool {
 
 	MyConnection createNewConnectionForPool() {
 		try {
-			return new MyConnection(DriverManager.getConnection(url, username, password));
+			Connection connection = DriverManager.getConnection(url, username, password);
+			return new MyConnection(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
@@ -75,7 +77,6 @@ public class ConnectionPool {
 				} else {
 					unlock.remove(myConnection);
 					lock.put(myConnection, now);
-					myConnection.setMyConnectionToBeOpen();
 					return myConnection;
 				}
 			}
@@ -89,7 +90,8 @@ public class ConnectionPool {
 	synchronized void returnConnectionToPool(MyConnection myConnection) {
 		if (lock.containsKey(myConnection)) {
 			lock.remove(myConnection);
-			unlock.put(myConnection, System.currentTimeMillis());
+			Connection connection = myConnection.getRealConnection();
+			unlock.put(new MyConnection(connection), System.currentTimeMillis());
 			notifyAll();
 		}
 	}

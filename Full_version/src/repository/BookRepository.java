@@ -126,7 +126,7 @@ public class BookRepository implements MySqlInputValidityControl {
 		checkSqlInputValidity(column, value);
 
 		final String sql = isFixedValue == true ? "SELECT * FROM book WHERE " + column + " = ?"
-				: "SELECT * FROM book WHERE " + column + " LIKE ?";
+				: "SELECT * FROM book WHERE LOWER(`" + column + "`) LIKE ?";
 		LinkedHashSet<Book> setOfBooks = new LinkedHashSet<Book>();
 
 		try (Connection con = DataSource.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {

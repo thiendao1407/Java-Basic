@@ -141,7 +141,7 @@ public class AccountRepository implements MySqlInputValidityControl {
 		checkSqlInputValidity(column, value);
 
 		final String sql = isFixedValue == true ? "SELECT * FROM account WHERE " + column + " = ?"
-				: "SELECT * FROM account WHERE " + column + " LIKE ?";
+				: "SELECT * FROM account WHERE LOWER(`" + column + "`) LIKE ?";
 
 		LinkedHashSet<Account> setOfAccounts = new LinkedHashSet<Account>();
 

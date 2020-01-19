@@ -99,7 +99,7 @@ public class BookControl implements SearchBook {
 	public LinkedHashSet<Book> searchBookByTitle() {
 		System.out.println("Please enter title (No full name required): ");
 		try {
-			String regex = "%" + bufferedReader.readLine() + "%";
+			String regex = "%" + bufferedReader.readLine().toLowerCase() + "%";
 			LinkedHashSet<Book> resultSet = bookRepository.searchBook("title", regex, false);
 			// Print the result
 			showBooks(resultSet);
@@ -114,7 +114,7 @@ public class BookControl implements SearchBook {
 	public LinkedHashSet<Book> searchBookByAuthor() {
 		System.out.println("Please enter author (No full name required): ");
 		try {
-			String regex = "%" + bufferedReader.readLine() + "%";
+			String regex = "%" + bufferedReader.readLine().toLowerCase() + "%";
 			LinkedHashSet<Book> resultSet = bookRepository.searchBook("author", regex, false);
 			// Print the result
 			showBooks(resultSet);
